@@ -18,8 +18,11 @@ type Friend struct {
 	Friends []string `json:"friends"`
 }
 
+var hasHeardTheGossip = make(map[string]bool)
+
 // hearGossip indicates that the friend has heard the gossip.
 func (f *Friend) hearGossip() {
+	hasHeardTheGossip[f.ID] = true
 	log.Printf("%s has heard the gossip!\n", f.Name)
 }
 
@@ -40,9 +43,26 @@ func (f *Friends) getRandomFriend() Friend {
 	return f.getFriend(fmt.Sprint(id))
 }
 
+func getFriendIdsHasNotHeard(friends []string) []string {
+	hasNotHead := []string{}
+	for _, friendId := range friends {
+		if !hasHeardTheGossip[friendId] {
+			hasNotHead = append(hasNotHead, friendId)
+		}
+	}
+
+	return hasNotHead
+}
+
 // spreadGossip ensures that all the friends in the map have heard the news
 func spreadGossip(root Friend, friends Friends) {
-	panic("NOT IMPLEMENTED")
+	if !hasHeardTheGossip[root.ID] {
+		root.hearGossip()
+	}
+	for _, friendId := range getFriendIdsHasNotHeard(root.Friends) {
+		friend := friends.getFriend(friendId)
+		spreadGossip(friend, friends)
+	}
 }
 
 func main() {
