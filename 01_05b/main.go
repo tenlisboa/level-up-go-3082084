@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"sort"
 )
 
 const path = "items.json"
@@ -20,7 +21,20 @@ type SaleItem struct {
 // matchSales adds the sales procentage of the item
 // and sorts the array accordingly.
 func matchSales(budget float64, items []SaleItem) []SaleItem {
-	panic("NOT IMPLEMENTED")
+	var withinBudgetItems []SaleItem
+	for _, item := range items {
+		item.SalePercentage = -(item.OriginalPrice - item.ReducedPrice) * 100 / item.OriginalPrice
+		if item.ReducedPrice <= budget {
+			withinBudgetItems = append(withinBudgetItems, item)
+			budget -= item.ReducedPrice
+		}
+	}
+
+	sort.SliceStable(withinBudgetItems, func(before, after int) bool {
+		return withinBudgetItems[before].SalePercentage > withinBudgetItems[after].SalePercentage
+	})
+
+	return withinBudgetItems
 }
 
 func main() {
@@ -39,12 +53,12 @@ func printItems(items []SaleItem) {
 		log.Println("No items found.:( Try increasing your budget.")
 	}
 	for i, r := range items {
-		log.Printf("[%d]:%s is %.2f OFF! Get it now for JUST %.2f!\n", 
-		i, r.Name, r.SalePercentage, r.ReducedPrice)
+		log.Printf("[%d]:%s is %.2f OFF! Get it now for JUST %.2f!\n",
+			i, r.Name, r.SalePercentage, r.ReducedPrice)
 	}
 }
 
-// importData reads the raffle entries from file and 
+// importData reads the raffle entries from file and
 // creates the entries slice.
 func importData() []SaleItem {
 	file, err := os.ReadFile(path)
