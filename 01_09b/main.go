@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"text/tabwriter"
+	"time"
 )
 
 const path = "songs.json"
@@ -19,12 +21,27 @@ type Song struct {
 
 // makePlaylist makes the merged sorted list of songs
 func makePlaylist(albums [][]Song) []Song {
-	panic("NOT IMPLEMENTED")
+	playlist := []Song{}
+
+	for _, a := range albums {
+		playlist = append(playlist, a...)
+	}
+
+	sort.Slice(playlist, func(i, j int) bool {
+		if playlist[i].PlayCount > playlist[j].PlayCount {
+			return true
+		}
+		return false
+	})
+
+	return playlist
 }
 
 func main() {
+	start := time.Now()
 	albums := importData()
 	printTable(makePlaylist(albums))
+	log.Printf("main, execution time %s\n", time.Since(start))
 }
 
 // printTable prints merged playlist as a table
@@ -53,3 +70,5 @@ func importData() [][]Song {
 
 	return data
 }
+
+// 1.24ms
